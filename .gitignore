@@ -1,0 +1,10 @@
+# Thư mục chứa các thư viện đã cài đặt
+node_modules/
+
+# File cấu hình môi trường chứa mật khẩu/thông tin nhạy cảm
+.env
+
+# File log hoặc tạm thời
+*.log
+.DS_Store
+

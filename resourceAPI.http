@@ -1,0 +1,91 @@
+### 1. CREATE RESOURCE (Tạo resource mới)
+POST http://localhost:3001/api/resources
+Content-Type: application/json
+
+{
+  "title": "React Documentation",
+  "url": "https://react.dev",
+  "category": "Frontend",
+  "tags": [
+    "React",
+    "JavaScript",
+    "Frontend"
+  ],
+  "summary": "Tài liệu chính thức của React dành cho lập trình viên Web"
+}
+
+### 2. CREATE RESOURCE KHÁC (Tạo thêm dữ liệu test)
+POST http://localhost:3001/api/resources
+Content-Type: application/json
+
+{
+  "title": "Express.js Guide",
+  "url": "https://expressjs.com",
+  "category": "Backend",
+  "tags": [
+    "NodeJS",
+    "Express",
+    "Backend"
+  ],
+  "summary": "Hướng dẫn sử dụng Framework Express.js trong Node.js"
+}
+
+### 3. GET ALL RESOURCES (Lấy tất cả)
+GET http://localhost:3001/api/resources
+
+### 4. GET DETAIL RESOURCE (Thay :id bằng ObjectId thật lấy từ GET ALL)
+GET http://localhost:3001/api/resources/66e700000000000000000001
+
+### 5. UPDATE RESOURCE (Thay :id bằng ObjectId thật)
+PUT http://localhost:3001/api/resources/66e700000000000000000001
+Content-Type: application/json
+
+{
+  "title": "React Documentation (Cập nhật 2026)",
+  "url": "https://react.dev",
+  "category": "Frontend",
+  "tags": [
+    "ReactJS",
+    "JavaScript"
+  ],
+  "summary": "Tài liệu chính thức cập nhật bản mới nhất"
+}
+
+### 6. DELETE RESOURCE (Thay :id bằng ObjectId thật)
+DELETE http://localhost:3001/api/resources/66e700000000000000000001
+
+### 7. SEARCH (Tìm kiếm theo từ khóa trong title hoặc summary)
+GET http://localhost:3001/api/resources?search=react
+
+### 8. FILTER CATEGORY (Lọc theo danh mục)
+GET http://localhost:3001/api/resources?category=Frontend
+
+### 9. FILTER TAG (Lọc theo thẻ tag)
+GET http://localhost:3001/api/resources?tag=javascript
+
+### 10. SORT NEWEST (Sắp xếp mới nhất)
+GET http://localhost:3001/api/resources?sort=newest
+
+### 11. SORT UPVOTED (Sắp xếp theo upvotes giảm dần)
+GET http://localhost:3001/api/resources?sort=upvoted
+
+### 12. SEARCH + FILTER + SORT (KẾT HỢP TẤT CẢ QUERY)
+GET http://localhost:3001/api/resources?search=react&category=Frontend&tag=javascript&sort=upvoted
+
+### 13. UPVOTE RESOURCE (Tăng lượt upvote theo kiểu atomic operation)
+PATCH http://localhost:3001/api/resources/66e700000000000000000001/upvote
+
+### 14. TEST INVALID OBJECT ID (Test ID sai định dạng -> Kỳ vọng: 400 ID không hợp lệ)
+GET http://localhost:3001/api/resources/abc-123-invalid-id
+
+### 15. TEST VALIDATION ERROR (Test thiếu title & URL sai -> Kỳ vọng: 400 Dữ liệu không hợp lệ)
+POST http://localhost:3001/api/resources
+Content-Type: application/json
+
+{
+  "title": "A",
+  "url": "not-a-valid-url",
+  "category": "InvalidCategory",
+  "tags": []
+}
+

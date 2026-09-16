@@ -1,0 +1,536 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "DEV PULSE – Bookmark & Resource Directory API",
+    "version": "1.0.0",
+    "description": "REST API Backend cho ứng dụng DEV PULSE, hỗ trợ lưu trữ, phân loại, tìm kiếm, lọc và upvote tài nguyên lập trình."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Development Local Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Resources",
+      "description": "Quản lý các tài nguyên lập trình (Bookmark & Directory)"
+    }
+  ],
+  "paths": {
+    "/api/resources": {
+      "post": {
+        "summary": "Tạo mới resource tài nguyên",
+        "description": "Tạo một tài nguyên bookmark mới trong hệ thống. Dữ liệu được kiểm tra bằng Joi Middleware.",
+        "tags": ["Resources"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo resource thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ (Validation Failure)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Lấy danh sách tài nguyên (Hỗ trợ Search, Filter, Sort)",
+        "description": "Lấy danh sách tất cả các resource. Có thể kết hợp lọc, tìm kiếm và sắp xếp.",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tìm kiếm theo từ khóa trong tiêu đề (title) hoặc tóm tắt (summary)",
+            "example": "react"
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "type": "string",
+              "enum": ["Frontend", "Backend", "DevOps", "AI", "Mobile", "UI/UX"]
+            },
+            "description": "Lọc tài nguyên theo danh mục",
+            "example": "Frontend"
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Lọc tài nguyên theo thẻ tag",
+            "example": "javascript"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": ["newest", "upvoted"],
+              "default": "newest"
+            },
+            "description": "Sắp xếp theo mới nhất (newest) hoặc lượt upvote cao nhất (upvoted)",
+            "example": "upvoted"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy danh sách thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Category query không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/resources/{id}": {
+      "get": {
+        "summary": "Lấy chi tiết một tài nguyên theo ID",
+        "description": "Tìm và trả về thông tin chi tiết của resource theo MongoDB ObjectId.",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MongoDB ObjectId của resource",
+            "example": "66e71234567890abcdef1234"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lấy chi tiết thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID không hợp lệ định dạng ObjectId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy resource với ID tương ứng",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server"
+          }
+        }
+      },
+      "put": {
+        "summary": "Cập nhật thông tin tài nguyên theo ID",
+        "description": "Cập nhật title, url, category, tags, summary. Không cho sửa trực tiếp upvotes.",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MongoDB ObjectId của resource cần sửa",
+            "example": "66e71234567890abcdef1234"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật resource thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID không hợp lệ hoặc Dữ liệu không hợp lệ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy resource để cập nhật",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Xóa một tài nguyên theo ID",
+        "description": "Xóa vĩnh viễn tài nguyên ra khỏi cơ sở dữ liệu.",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MongoDB ObjectId của resource cần xóa",
+            "example": "66e71234567890abcdef1234"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa resource thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Xóa resource thành công"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID không hợp lệ định dạng ObjectId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy resource để xóa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server"
+          }
+        }
+      }
+    },
+    "/api/resources/{id}/upvote": {
+      "patch": {
+        "summary": "Tăng 1 lượt bình chọn (Upvote) cho tài nguyên",
+        "description": "Tăng upvotes thêm 1 bằng toán tử $inc (Atomic Operation).",
+        "tags": ["Resources"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "MongoDB ObjectId của resource cần upvote",
+            "example": "66e71234567890abcdef1234"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upvote thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpvoteSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID không hợp lệ định dạng ObjectId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy resource để upvote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi hệ thống server"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Resource": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "66e71234567890abcdef1234"
+          },
+          "title": {
+            "type": "string",
+            "example": "React Documentation"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://react.dev"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Frontend", "Backend", "DevOps", "AI", "Mobile", "UI/UX"],
+            "example": "Frontend"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["react", "javascript", "frontend"]
+          },
+          "summary": {
+            "type": "string",
+            "example": "Tài liệu chính thức của React dành cho lập trình viên Web"
+          },
+          "upvotes": {
+            "type": "integer",
+            "example": 10
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-16T14:41:30.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-16T14:41:30.000Z"
+          }
+        }
+      },
+      "ResourceInput": {
+        "type": "object",
+        "required": ["title", "url", "category", "tags"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "example": "React Documentation"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://react.dev"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["Frontend", "Backend", "DevOps", "AI", "Mobile", "UI/UX"],
+            "example": "Frontend"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["React", "JavaScript", "Frontend"]
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 300,
+            "example": "Tài liệu chính thức của React dành cho lập trình viên Web"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Lấy dữ liệu thành công"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Resource"
+          }
+        }
+      },
+      "SuccessListResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Lấy danh sách thành công"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          }
+        }
+      },
+      "UpvoteSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Upvote thành công"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "upvotes": {
+                "type": "integer",
+                "example": 11
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Không tìm thấy resource"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Dữ liệu không hợp lệ"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Title phải có ít nhất 3 ký tự",
+              "URL phải là một liên kết hợp lệ (vd: https://example.com)"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
