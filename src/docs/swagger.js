@@ -77,6 +77,11 @@ REST API Backend cho ứng dụng **DEV PULSE**, hỗ trợ lưu trữ, phân lo
                 "Tài liệu chính thức của React dành cho lập trình viên Web",
               description: "Tóm tắt nội dung tài nguyên",
             },
+            codeSnippet: {
+              type: "string",
+              example: "console.log('Hello DevPulse!');",
+              description: "Mã nguồn minh họa (Code Snippet)",
+            },
             upvotes: {
               type: "integer",
               minimum: 0,
@@ -127,6 +132,10 @@ REST API Backend cho ứng dụng **DEV PULSE**, hỗ trợ lưu trữ, phân lo
               maxLength: 300,
               example:
                 "Tài liệu chính thức của React dành cho lập trình viên Web",
+            },
+            codeSnippet: {
+              type: "string",
+              example: "console.log('Hello DevPulse!');",
             },
           },
         },

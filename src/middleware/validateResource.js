@@ -52,6 +52,9 @@ const resourceJoiSchema = Joi.object({
   summary: Joi.string().trim().max(300).allow("").optional().messages({
     "string.max": "Summary tối đa 300 ký tự",
   }),
+  codeSnippet: Joi.string().allow("").optional().messages({
+    "string.base": "Code snippet phải là chuỗi văn bản",
+  }),
 });
 
 /**

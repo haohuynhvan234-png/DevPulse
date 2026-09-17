@@ -66,7 +66,13 @@ const resourceSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 6. Upvotes: Số lượt upvote tài nguyên (Mặc định là 0, tối thiểu là 0)
+    // 6. Code Snippet: Mã nguồn minh họa (Tùy chọn)
+    codeSnippet: {
+      type: String,
+      default: "",
+    },
+
+    // 7. Upvotes: Số lượt upvote tài nguyên (Mặc định là 0, tối thiểu là 0)
     upvotes: {
       type: Number,
       default: 0,

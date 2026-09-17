@@ -408,6 +408,10 @@
             "type": "string",
             "example": "Tài liệu chính thức của React dành cho lập trình viên Web"
           },
+          "codeSnippet": {
+            "type": "string",
+            "example": "console.log('Hello DevPulse!');"
+          },
           "upvotes": {
             "type": "integer",
             "example": 10
@@ -455,6 +459,10 @@
             "type": "string",
             "maxLength": 300,
             "example": "Tài liệu chính thức của React dành cho lập trình viên Web"
+          },
+          "codeSnippet": {
+            "type": "string",
+            "example": "console.log('Hello DevPulse!');"
           }
         }
       },
